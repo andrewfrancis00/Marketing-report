@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doctor Style Dashboard - Feb 24 - Mar 2, 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0a0e27;--surface:#131842;--card:#1a1f4e;--glass:rgba(26,31,78,0.6);
+--primary:#6366f1;--primary-light:#818cf8;--accent:#06d6a0;--danger:#ef4444;
+--warning:#f59e0b;--text:#e2e8f0;--muted:#94a3b8;--border:rgba(99,102,241,0.2);
+--gold:#fbbf24;--green:#10b981;--red:#ef4444;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;direction:rtl}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+
+/* Header */
+.header{text-align:center;padding:40px 20px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+background:radial-gradient(circle at 30% 50%,rgba(99,102,241,0.15),transparent 60%),
+radial-gradient(circle at 70% 50%,rgba(6,214,160,0.1),transparent 60%);animation:pulse 8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.header h1{font-size:2.8em;font-weight:900;background:linear-gradient(135deg,var(--primary-light),var(--accent));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;position:relative}
+.header .period{font-size:1.2em;color:var(--muted);position:relative}
+
+/* KPI Grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:30px 0}
+.kpi-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);
+border-radius:16px;padding:24px;text-align:center;transition:all .3s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+.kpi-card:hover{transform:translateY(-6px);border-color:var(--primary);box-shadow:0 20px 40px rgba(99,102,241,0.2)}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+background:linear-gradient(90deg,var(--primary),var(--accent));opacity:0;transition:opacity .3s}
+.kpi-card:hover::after{opacity:1}
+.kpi-label{font-size:.85em;color:var(--muted);margin-bottom:8px;font-weight:600}
+.kpi-value{font-size:1.6em;font-weight:900;color:var(--accent)}
+
+/* Sections */
+.section{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);
+border-radius:20px;padding:30px;margin:24px 0;animation:fadeInUp .6s ease-out}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-size:1.4em;font-weight:700;color:var(--primary-light);margin-bottom:20px;
+padding-bottom:12px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:10px}
+
+/* Tables */
+.table-wrap{overflow-x:auto;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:.9em}
+th{background:var(--card);color:var(--primary-light);padding:14px 12px;text-align:center;font-weight:700;
+border-bottom:2px solid var(--primary);position:sticky;top:0}
+td{padding:12px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.05);transition:background .2s}
+tr:hover td{background:rgba(99,102,241,0.08)}
+tr.total-row td{background:rgba(6,214,160,0.1);font-weight:700}
+.content-title{text-align:right;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Badges */
+.badge{padding:4px 12px;border-radius:20px;font-size:.8em;font-weight:600}
+.badge-success{background:rgba(16,185,129,0.2);color:var(--green)}
+.badge-danger{background:rgba(239,68,68,0.2);color:var(--red)}
+.badge-default{background:rgba(148,163,184,0.15);color:var(--muted)}
+
+/* Stock */
+.stock-out td{background:rgba(239,68,68,0.1)!important}
+.stock-low td{background:rgba(245,158,11,0.1)!important}
+.stock-high td{background:rgba(99,102,241,0.08)!important}
+
+/* Charts */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:24px}
+.chart-card{background:var(--card);border-radius:16px;padding:24px;border:1px solid var(--border)}
+.chart-card h3{color:var(--primary-light);margin-bottom:16px;font-size:1.1em}
+
+/* Recs */
+.rec-section{margin:16px 0}.rec-section h3{color:var(--accent);margin-bottom:12px}
+.rec-item{display:flex;gap:12px;padding:16px;background:var(--card);border-radius:12px;margin:8px 0;
+border-right:4px solid var(--warning);align-items:center;transition:transform .2s}
+.rec-item:hover{transform:translateX(-4px)}
+.rec-priority{font-weight:700;min-width:80px;text-align:center}
+.rec-text{flex:1;line-height:1.6}
+.rec-impact{color:var(--muted);font-size:.85em;min-width:120px;text-align:center}
+
+/* Conversion */
+.conv-card{text-align:center;padding:30px}
+.conv-big{font-size:3.5em;font-weight:900;margin:16px 0}
+.conv-green{color:var(--green)}.conv-yellow{color:var(--warning)}.conv-red{color:var(--red)}
+
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(10,14,39,0.9);backdrop-filter:blur(20px);
+padding:12px 0;border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;gap:8px;overflow-x:auto;padding:0 20px;max-width:1400px;margin:0 auto}
+.nav-btn{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;
+color:var(--muted);cursor:pointer;white-space:nowrap;font-family:'Cairo';font-size:.85em;transition:all .2s}
+.nav-btn:hover,.nav-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
+
+@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}
+.header h1{font-size:1.8em}.container{padding:10px}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+<div class="nav-inner">
+<button class="nav-btn active" onclick="scrollToSection('snapshot')">📊 Executive</button>
+<button class="nav-btn" onclick="scrollToSection('sales')">👥 Sales</button>
+<button class="nav-btn" onclick="scrollToSection('ads')">📢 Ads</button>
+<button class="nav-btn" onclick="scrollToSection('organic')">📱 Organic</button>
+<button class="nav-btn" onclick="scrollToSection('conversion')">🎯 Conversion</button>
+<button class="nav-btn" onclick="scrollToSection('stock')">📦 Stock</button>
+<button class="nav-btn" onclick="scrollToSection('audience')">👤 Audience</button>
+<button class="nav-btn" onclick="scrollToSection('charts')">📈 Charts</button>
+<button class="nav-btn" onclick="scrollToSection('recs')">💡 Recommendations</button>
+</div>
+</nav>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+<h1>Doctor Style</h1>
+<div class="period">📅 Feb 24 - Mar 2, 2026</div>
+</div>
+
+<!-- EXECUTIVE SNAPSHOT -->
+<div id="snapshot">
+<div class="kpi-grid">
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Total Reach</div>
+            <div class="kpi-value">1,460,105</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Total Engagement</div>
+            <div class="kpi-value">11,745</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Total Messages (Ads)</div>
+            <div class="kpi-value">2,796</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Total Orders Closed</div>
+            <div class="kpi-value">150</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Conversion %</div>
+            <div class="kpi-value">5.4%</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Revenue Generated</div>
+            <div class="kpi-value">297,140 EGP</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Ad Spend</div>
+            <div class="kpi-value">39,241 EGP</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Cost %</div>
+            <div class="kpi-value">13.21%</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">ROAS</div>
+            <div class="kpi-value">7.6x</div>
+        </div>
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-label">Average Invoice</div>
+            <div class="kpi-value">1,980 EGP</div>
+        </div></div>
+</div>
+
+<!-- SALES TEAMS -->
+<div id="sales"></div>
+
+<!-- PAID ADS -->
+<div id="ads">
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">📢 Paid Ads Report</h2>
+<div class="kpi-grid">
+<div class="kpi-card"><div class="kpi-label">Total Spend</div><div class="kpi-value">39,241 EGP</div></div>
+<div class="kpi-card"><div class="kpi-label">CPM</div><div class="kpi-value">34.77</div></div>
+<div class="kpi-card"><div class="kpi-label">Cost/Message</div><div class="kpi-value">14.03</div></div>
+<div class="kpi-card"><div class="kpi-label">Messages</div><div class="kpi-value">2,796</div></div>
+<div class="kpi-card"><div class="kpi-label">ROAS</div><div class="kpi-value">7.6x</div></div>
+<div class="kpi-card"><div class="kpi-label">Cost %</div><div class="kpi-value">13.21%</div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px">
+<div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:20px">
+<h4 style="color:var(--green)">🟢 Best Creative</h4>
+<p style="margin:8px 0;font-weight:700">doctor msgs 24/2 — شامبو صولا</p>
+<p>CPR: 5.12 | Results: 386</p>
+</div>
+<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px">
+<h4 style="color:var(--red)">🔴 Worst Creative</h4>
+<p style="margin:8px 0;font-weight:700">doctor msgs photos 7/2 — ‎امبولات + زيت‎</p>
+<p>CPR: 59.68 | Results: 7</p>
+</div>
+</div>
+</div>
+
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">📋 Campaign Details</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>الحملة</th><th>الإنفاق</th><th>النتائج</th><th>CPR</th><th>الوصول</th><th>التقييم</th></tr></thead>
+<tbody><tr>
+                <td>Msg. Doctor 19/8 — باكدج صولاباي</td><td>3,113</td><td>112</td>
+                <td>27.80</td><td>16,852</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>awr doctor 12/1 — New Awareness Ad - Copy 4</td><td>1,748</td><td>281,343</td>
+                <td>6.21</td><td>281,343</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>awr doctor 12/1 — New Awareness Ad - Copy 2</td><td>209</td><td>36,863</td>
+                <td>5.68</td><td>36,863</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>awr doctor 12/1 — New Awareness Ad - Copy</td><td>104</td><td>18,333</td>
+                <td>5.69</td><td>18,333</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>awr doctor 12/1 — New Awareness Ad - Copy 3</td><td>38</td><td>7,021</td>
+                <td>5.52</td><td>7,021</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>awr doctor 12/1 — New Awareness Ad - Copy 4</td><td>17</td><td>3,350</td>
+                <td>5.28</td><td>3,350</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>awr doctor 12/1 — New Awareness Ad</td><td>14</td><td>2,502</td>
+                <td>5.73</td><td>2,502</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>doctor style 30 /12 — ماسك + سيرم</td><td>3,983</td><td>415</td>
+                <td>9.60</td><td>46,597</td>
+                <td><span class="badge badge-success">جيدة ✅</span></td>
+            </tr><tr>
+                <td>page like doctor 16/11 — New Engagement Ad</td><td>2,148</td><td>2,774</td>
+                <td>0.77</td><td>71,036</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>doctor style 30 /12 — هيرفوليكل + شامبو + زيت ثوم</td><td>204</td><td>8</td>
+                <td>25.62</td><td>2,701</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>doctor style 30 /12 — ‎ماسك + سيرم‎ + شامبو</td><td>30</td><td>1</td>
+                <td>30.36</td><td>435</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>doctor style 30 /12 — كورس الشعر</td><td>1</td><td>0</td>
+                <td>—</td><td>18</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>doctor msgs 28/1 — شامبو + ماسك + سيرم</td><td>3,547</td><td>176</td>
+                <td>20.16</td><td>55,082</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>doctor msgs 28/1 — ‎شامبو + زيت+ سيرم‎ - dark</td><td>359</td><td>11</td>
+                <td>32.71</td><td>3,407</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>‎دكتور الجديده 001‎ — شامبو وبلسم ثوم</td><td>368</td><td>18</td>
+                <td>20.48</td><td>5,616</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>‎دكتور الجديده 001‎ — ‎علاج فراغات الشعر‎ - Copy</td><td>234</td><td>12</td>
+                <td>19.53</td><td>4,061</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>‎دكتور الجديده 001‎ — سيرم</td><td>129</td><td>3</td>
+                <td>43.21</td><td>2,140</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>whats doctor api 15/12 — zet dark</td><td>3,431</td><td>353</td>
+                <td>9.72</td><td>31,432</td>
+                <td><span class="badge badge-success">جيدة ✅</span></td>
+            </tr><tr>
+                <td>doctor 003 — جلسه فرد دارك</td><td>3,152</td><td>482</td>
+                <td>6.54</td><td>58,889</td>
+                <td><span class="badge badge-success">جيدة ✅</span></td>
+            </tr><tr>
+                <td>doctor 003 — سيرم دارك</td><td>144</td><td>14</td>
+                <td>10.32</td><td>2,630</td>
+                <td><span class="badge badge-success">جيدة ✅</span></td>
+            </tr><tr>
+                <td>doctor 003 — زيت الدهب الاخضر</td><td>0</td><td>0</td>
+                <td>—</td><td>15</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>doctor msgs 4/12 - Copy — ماسك</td><td>3,571</td><td>209</td>
+                <td>17.09</td><td>51,106</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>doctor bloom msgs. — سييرم</td><td>1,904</td><td>177</td>
+                <td>10.76</td><td>16,664</td>
+                <td><span class="badge badge-success">جيدة ✅</span></td>
+            </tr><tr>
+                <td>doctor bloom msgs. — ماسك</td><td>1,198</td><td>95</td>
+                <td>12.61</td><td>12,809</td>
+                <td><span class="badge badge-default">مقبولة</span></td>
+            </tr><tr>
+                <td>doctor bloom msgs. — عرض العروسة</td><td>418</td><td>34</td>
+                <td>12.31</td><td>3,568</td>
+                <td><span class="badge badge-default">مقبولة</span></td>
+            </tr><tr>
+                <td>doctor bloom msgs. — غسول + سيرم + ماسك</td><td>29</td><td>0</td>
+                <td>—</td><td>137</td>
+                <td><span class="badge badge-default">—</span></td>
+            </tr><tr>
+                <td>doctor msgs photos 7/2 — ماسك + سيرم + شامبو</td><td>3,880</td><td>157</td>
+                <td>24.72</td><td>52,891</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>doctor msgs 24/2 — برنامج التساقط</td><td>2,473</td><td>116</td>
+                <td>21.32</td><td>45,020</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>doctor msgs 24/2 — شامبو صولا</td><td>1,975</td><td>386</td>
+                <td>5.12</td><td>60,358</td>
+                <td><span class="badge badge-success">جيدة ✅</span></td>
+            </tr><tr>
+                <td>doctor msgs photos 7/2 — ‎امبولات + زيت‎</td><td>417</td><td>7</td>
+                <td>59.68</td><td>5,127</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>doctor msgs 24/2 — شامبو وزيت صولا</td><td>255</td><td>5</td>
+                <td>51.16</td><td>3,939</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr>
+                <td>doctor msgs 24/2 — هيرماسك صولا</td><td>132</td><td>5</td>
+                <td>26.55</td><td>1,374</td>
+                <td><span class="badge badge-danger">تكلفة مرتفعة ⚠️</span></td>
+            </tr><tr class="total-row">
+                <td>الإجمالي</td><td>39,241</td><td>2,796</td>
+                <td>14.03</td><td>—</td>
+                <td><span class="badge badge-default"></span></td>
+            </tr></tbody>
+</table></div>
+</div>
+</div>
+
+<!-- ORGANIC + CONTENT -->
+<div id="organic">
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">📱 Facebook Page Insights</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>المؤشر</th><th>القيمة</th><th>التغيير</th><th>التقييم</th></tr></thead>
+<tbody><tr><td>إجمالي المشاهدات</td><td>706,068</td><td></td><td></td></tr><tr><td>الوصول (Reach)</td><td>556,789</td><td></td><td></td></tr><tr><td>مشاهدات 3 ثواني</td><td>322,042</td><td></td><td></td></tr><tr><td>مشاهدات دقيقة كاملة</td><td>1,565</td><td></td><td></td></tr><tr><td>إجمالي التفاعلات</td><td>11,745</td><td>2.11%</td><td>جيد</td></tr><tr><td>الإعجابات</td><td>10,331</td><td></td><td></td></tr><tr><td>التعليقات</td><td>398</td><td></td><td></td></tr><tr><td>المشاركات</td><td>1,016</td><td></td><td></td></tr><tr><td>النقرات</td><td>7,444</td><td></td><td></td></tr><tr><td>مشاهدات أورجانيك</td><td>705,146</td><td>99.9%</td><td></td></tr><tr><td>مشاهدات إعلانات</td><td>1,328</td><td>0.2%</td><td></td></tr><tr><td>وقت المشاهدة (ثواني)</td><td>7,048,515</td><td></td><td></td></tr><tr><td>متوسط وقت المشاهدة (ثانية)</td><td>10.0</td><td></td><td></td></tr></tbody>
+</table></div>
+</div>
+
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">🎬 Content Performance</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>المحتوى</th><th>التاريخ</th><th>المشاهدات</th><th>الوصول</th><th>التفاعلات</th><th>نسبة التفاعل</th><th>التقييم</th></tr></thead>
+<tbody><tr>
+            <td class="content-title">ليه شعرك مش بيطول وبيهيش بسرعة؟ 🤔
+
+الإجابة في نقص الأوميجا و…</td><td>02/25/2026</td>
+            <td>671,333</td><td>526,985</td>
+            <td>11,275</td><td>2.14%</td>
+            <td><span class="badge badge-default">جيد</span></td>
+        </tr><tr>
+            <td class="content-title">شعرك بيهيش بمجرد ما تخلصي تسريح؟ 💇‍♀️
+
+تعالي نعرف من د. سارة…</td><td>03/02/2026</td>
+            <td>7,228</td><td>6,600</td>
+            <td>111</td><td>1.68%</td>
+            <td><span class="badge badge-default">جيد</span></td>
+        </tr><tr>
+            <td class="content-title">"المطبخ ده مملكتي… ممنوع الاقتراب أو التصوير!" 🚫📸
+
+ناس كتير …</td><td>02/26/2026</td>
+            <td>6,864</td><td>5,839</td>
+            <td>128</td><td>2.19%</td>
+            <td><span class="badge badge-default">جيد</span></td>
+        </tr><tr>
+            <td class="content-title">✨ مفيش وقت قبل العيد؟ يبقى جلسة الـ 5 دقايق دي هتنقذك.
+
+هيرم…</td><td>02/24/2026</td>
+            <td>4,987</td><td>4,478</td>
+            <td>52</td><td>1.16%</td>
+            <td><span class="badge badge-default">جيد</span></td>
+        </tr><tr>
+            <td class="content-title">رسالة مهمة لكل حامل: جنينك مش مكلّف بالصيام.
+
+لو انتي حامل أ…</td><td>02/24/2026</td>
+            <td>4,933</td><td>4,924</td>
+            <td>47</td><td>0.95%</td>
+            <td><span class="badge badge-default">متوسط</span></td>
+        </tr><tr>
+            <td class="content-title">تخيلي شعرك أطول وأتقل في 3 شهور! ✨
+
+مش سحر، ده روتين صولاباي…</td><td>02/28/2026</td>
+            <td>4,625</td><td>3,583</td>
+            <td>63</td><td>1.76%</td>
+            <td><span class="badge badge-default">جيد</span></td>
+        </tr><tr>
+            <td class="content-title">فاضل نص ساعة على المدفع وأنت لسه معملتيش اكل؟ 🙆‍♀️
+
+ بدل ما …</td><td>02/27/2026</td>
+            <td>3,643</td><td>2,976</td>
+            <td>39</td><td>1.31%</td>
+            <td><span class="badge badge-default">جيد</span></td>
+        </tr><tr>
+            <td class="content-title">طول شعرك واقف بقاله شهور؟ 😩
+
+تعالي أقولك الحقيقة:
+الشعر مش ب…</td><td>03/01/2026</td>
+            <td>2,455</td><td>1,404</td>
+            <td>30</td><td>2.14%</td>
+            <td><span class="badge badge-default">جيد</span></td>
+        </tr></tbody>
+</table></div>
+</div>
+</div>
+
+<!-- CONVERSION KPI -->
+<div id="conversion">
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">🎯 Sales Conversion & KPI Score</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px">
+<div class="conv-card kpi-card">
+<div class="kpi-label">Conversion Rate</div>
+<div class="conv-big conv-green">5.4%</div>
+<div>🟢 ممتاز</div>
+</div>
+<div class="conv-card kpi-card">
+<div class="kpi-label">KPI Score</div>
+<div class="conv-big" style="color:var(--gold)">1.68</div>
+<div>⭐ Star</div>
+</div>
+<div class="conv-card kpi-card">
+<div class="kpi-label">Orders Achievement</div>
+<div class="conv-big" style="color:var(--primary-light)">125.0%</div>
+<div>Target: 120 | Actual: 150</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- STOCK -->
+<div id="stock">
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">📦 Stock Report</h2>
+<div class="kpi-grid" style="margin-bottom:20px">
+<div class="kpi-card"><div class="kpi-label">إجمالي المنتجات</div><div class="kpi-value">37</div></div>
+<div class="kpi-card"><div class="kpi-label">🔴 نفد</div><div class="kpi-value" style="color:var(--red)">0</div></div>
+<div class="kpi-card"><div class="kpi-label">🟡 منخفض</div><div class="kpi-value" style="color:var(--warning)">4</div></div>
+<div class="kpi-card"><div class="kpi-label">📦 عالي</div><div class="kpi-value" style="color:var(--primary-light)">10</div></div>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>البراند</th><th>المنتج</th><th>الكمية</th><th>الحالة</th></tr></thead>
+<tbody><tr class="stock-high"><td>سوهير</td><td>بامب جي شوت</td><td>754</td><td>📦 مخزون عالي</td></tr><tr class=""><td>سوهير</td><td>مالتى فيتامين جاميز</td><td>165</td><td>🟢 متوفر</td></tr><tr class=""><td>سوهير</td><td>بيوتين وان شوت</td><td>272</td><td>🟢 متوفر</td></tr><tr class=""><td>سوهير</td><td>بلسم جرو وان</td><td>382</td><td>🟢 متوفر</td></tr><tr class="stock-high"><td>سوهير</td><td>شامبو جرو وان</td><td>510</td><td>📦 مخزون عالي</td></tr><tr class=""><td>سوهير</td><td>لوسيون جرو وان</td><td>223</td><td>🟢 متوفر</td></tr><tr class="stock-low"><td>سوهير</td><td>أقراص الجلوتاثيون</td><td>2</td><td>🟡 منخفض</td></tr><tr class=""><td>سوهير</td><td>شنطة سووكير</td><td>239</td><td>🟢 متوفر</td></tr><tr class=""><td>سوهير</td><td>جل عين سووهير</td><td>21</td><td>🟢 متوفر</td></tr><tr class=""><td>سوهير</td><td>كريم سوكير</td><td>48</td><td>🟢 متوفر</td></tr><tr class="stock-high"><td>سوهير</td><td>سيرم سوو هير</td><td>508</td><td>📦 مخزون عالي</td></tr><tr class="stock-high"><td>سوهير</td><td>زيت سوهير</td><td>1237</td><td>📦 مخزون عالي</td></tr><tr class=""><td>سوهير</td><td>شامبو سوو هير</td><td>408</td><td>🟢 متوفر</td></tr><tr class="stock-high"><td>سوهير</td><td>جاميز</td><td>794</td><td>📦 مخزون عالي</td></tr><tr class="stock-high"><td>سوهير</td><td>ويل اوميجا</td><td>1516</td><td>📦 مخزون عالي</td></tr><tr class="stock-high"><td>سوهير</td><td>سنتر فيتا</td><td>2179</td><td>📦 مخزون عالي</td></tr><tr class=""><td>سوهير</td><td>جاميز تخسيس</td><td>287</td><td>🟢 متوفر</td></tr><tr class=""><td>سوهير</td><td>سيرم ارز</td><td>54</td><td>🟢 متوفر</td></tr><tr class=""><td>سوهير</td><td>كولاجين بحرى</td><td>120</td><td>🟢 متوفر</td></tr><tr class="stock-high"><td>سوهير</td><td>ماسكرا سووهير</td><td>1649</td><td>📦 مخزون عالي</td></tr><tr class=""><td>صولاباي</td><td>شامبو صولابي</td><td>21</td><td>🟢 متوفر</td></tr><tr class=""><td>صولاباي</td><td>بلسم صولابي</td><td>90</td><td>🟢 متوفر</td></tr><tr class=""><td>صولاباي</td><td>كريم صولابي</td><td>19</td><td>🟢 متوفر</td></tr><tr class=""><td>صولاباي</td><td>سيرم صولابي</td><td>153</td><td>🟢 متوفر</td></tr><tr class=""><td>صولاباي</td><td>زيت صولابي</td><td>77</td><td>🟢 متوفر</td></tr><tr class=""><td>صولاباي</td><td>امبولات صولابي</td><td>125</td><td>🟢 متوفر</td></tr><tr class=""><td>صولاباي</td><td>مشط صولابي</td><td>196</td><td>🟢 متوفر</td></tr><tr class="stock-low"><td>صولاباي</td><td>زيت الثوم الأسود</td><td>4</td><td>🟡 منخفض</td></tr><tr class="stock-high"><td>مونستل</td><td>شامبو مونستيل</td><td>530</td><td>📦 مخزون عالي</td></tr><tr class="stock-high"><td>مونستل</td><td>اوميجا مونيستل</td><td>808</td><td>📦 مخزون عالي</td></tr><tr class="stock-low"><td>مونستل</td><td>مقشر قدم</td><td>7</td><td>🟡 منخفض</td></tr><tr class="stock-low"><td>مونستل</td><td>ديتوكس قدم</td><td>4</td><td>🟡 منخفض</td></tr><tr class=""><td>بلوم</td><td>غسول بلوم</td><td>120</td><td>🟢 متوفر</td></tr><tr class=""><td>بلوم</td><td>سيرم بلوم</td><td>189</td><td>🟢 متوفر</td></tr><tr class=""><td>بلوم</td><td>كريم بلوم</td><td>100</td><td>🟢 متوفر</td></tr><tr class=""><td>بلوم</td><td>ماسك بلوم</td><td>73</td><td>🟢 متوفر</td></tr><tr class=""><td>بلوم</td><td>شنطة بلوم</td><td>338</td><td>🟢 متوفر</td></tr></tbody>
+</table></div>
+</div>
+</div>
+
+<!-- AUDIENCE -->
+<div id="audience">
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">👤 Audience Demographics</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+<div class="table-wrap"><table>
+<thead><tr><th>النوع</th><th>العمر</th><th>3-sec Views</th><th>النسبة</th></tr></thead>
+<tbody><tr><td>إناث</td><td>35-44</td><td>89,363</td><td>28.9%</td></tr><tr><td>إناث</td><td>25-34</td><td>73,241</td><td>23.7%</td></tr><tr><td>إناث</td><td>45-54</td><td>39,142</td><td>12.6%</td></tr><tr><td>ذكور</td><td>35-44</td><td>30,434</td><td>9.8%</td></tr><tr><td>ذكور</td><td>25-34</td><td>23,497</td><td>7.6%</td></tr><tr><td>إناث</td><td>18-24</td><td>15,748</td><td>5.1%</td></tr><tr><td>ذكور</td><td>45-54</td><td>12,591</td><td>4.1%</td></tr><tr><td>إناث</td><td>55-64</td><td>12,055</td><td>3.9%</td></tr><tr><td>ذكور</td><td>18-24</td><td>5,763</td><td>1.9%</td></tr><tr><td>إناث</td><td>65+</td><td>3,776</td><td>1.2%</td></tr><tr><td>ذكور</td><td>55-64</td><td>2,980</td><td>1.0%</td></tr><tr><td>ذكور</td><td>65+</td><td>1,097</td><td>0.4%</td></tr></tbody>
+</table></div>
+<div class="chart-card"><h3>توزيع الجمهور</h3><canvas id="audienceChart"></canvas></div>
+</div>
+</div>
+
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">🌍 Top Countries</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>الدولة</th><th>الكود</th><th>3-sec Views</th><th>النسبة</th></tr></thead>
+<tbody><tr><td>Egypt</td><td>EG</td><td>67,864</td><td>21.2%</td></tr><tr><td>Algeria</td><td>DZ</td><td>31,864</td><td>9.9%</td></tr><tr><td>Jordan</td><td>JO</td><td>31,829</td><td>9.9%</td></tr><tr><td>Libya</td><td>LY</td><td>30,859</td><td>9.6%</td></tr><tr><td>Iraq</td><td>IQ</td><td>29,260</td><td>9.1%</td></tr><tr><td>Syria</td><td>SY</td><td>27,746</td><td>8.6%</td></tr><tr><td>Palestine</td><td>PS</td><td>16,618</td><td>5.2%</td></tr><tr><td>Saudi Arabia</td><td>SA</td><td>12,435</td><td>3.9%</td></tr><tr><td>Yemen</td><td>YE</td><td>10,547</td><td>3.3%</td></tr><tr><td>Tunisia</td><td>TN</td><td>8,501</td><td>2.6%</td></tr><tr><td>Morocco</td><td>MA</td><td>7,406</td><td>2.3%</td></tr><tr><td>Lebanon</td><td>LB</td><td>4,810</td><td>1.5%</td></tr><tr><td>Israel</td><td>IL</td><td>3,936</td><td>1.2%</td></tr><tr><td>United States</td><td>US</td><td>3,831</td><td>1.2%</td></tr><tr><td>France</td><td>FR</td><td>3,710</td><td>1.2%</td></tr></tbody>
+</table></div>
+</div>
+</div>
+
+<!-- CHARTS -->
+<div id="charts">
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">📈 الرسوم البيانية</h2>
+<div class="chart-grid">
+<div class="chart-card"><h3>المبيعات اليومية (EGP)</h3><canvas id="salesChart"></canvas></div>
+<div class="chart-card"><h3>عدد الأوردرات اليومية</h3><canvas id="ordersChart"></canvas></div>
+</div>
+</div>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<div id="recs">
+<div class="section" data-aos="fade-up">
+<h2 class="section-title">💡 التوصيات والحلول</h2>
+<div class="rec-section"><h3>توصيات الإعلانات</h3><div class="rec-item" data-aos="fade-left">
+                <span class="rec-priority">عاجل 🔴</span>
+                <span class="rec-text">أسوأ إعلان: doctor msgs photos 7/2 — ‎امبولات + زيت‎ — CPR 59.68 EGP. يُنصح بإيقافه أو تعديله</span>
+                <span class="rec-impact">توفير ميزانية</span>
+            </div><div class="rec-item" data-aos="fade-left">
+                <span class="rec-priority">مهم 🟡</span>
+                <span class="rec-text">أفضل إعلان: doctor msgs 24/2 — شامبو صولا — CPR 5.12 EGP. زيادة الميزانية</span>
+                <span class="rec-impact">زيادة النتائج</span>
+            </div></div><div class="rec-section"><h3>توصيات المبيعات</h3><div class="rec-item" data-aos="fade-left">
+                <span class="rec-priority">مهم 🟡</span>
+                <span class="rec-text">Conversion: 5.4% — 🟢 ممتاز</span>
+                <span class="rec-impact">متابعة التحويل</span>
+            </div><div class="rec-item" data-aos="fade-left">
+                <span class="rec-priority">متوسط 🟢</span>
+                <span class="rec-text">4 منتج مخزون منخفض. يجب إعادة التوريد</span>
+                <span class="rec-impact">منع فقدان مبيعات</span>
+            </div></div>
+</div>
+</div>
+
+</div><!-- /container -->
+
+<footer style="text-align:center;padding:40px;color:var(--muted);font-size:.85em">
+Generated by Dr Style Reporting Skill • Feb 24 - Mar 2, 2026
+</footer>
+
+<script>
+// Smooth scroll navigation
+function scrollToSection(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// Intersection Observer for nav highlighting
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.id;
+      document.querySelectorAll('.nav-btn').forEach(b=>{
+        b.classList.toggle('active',b.getAttribute('onclick').includes(id));
+      });
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('[id]').forEach(el=>observer.observe(el));
+
+// Animate KPI values on scroll
+const kpiObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.animation='fadeInUp .6s ease-out forwards';
+      kpiObserver.unobserve(e.target);
+    }
+  });
+},{threshold:0.1});
+document.querySelectorAll('.kpi-card,.section').forEach(el=>kpiObserver.observe(el));
+
+// Charts
+const chartStyle={
+  responsive:true,
+  plugins:{legend:{display:false}},
+  scales:{
+    y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8'}},
+    x:{grid:{display:false},ticks:{color:'#94a3b8'}}
+  }
+};
+
+new Chart(document.getElementById('salesChart'),{
+  type:'bar',
+  data:{
+    labels:["2/25/2026", "2/26/2026", "2/27/2026", "2/28/2026", "3/1/2026", "3/2/2026"],
+    datasets:[{
+      data:[38150, 74250, 36490, 27880, 69400, 50970],
+      backgroundColor:'rgba(99,102,241,0.6)',
+      borderColor:'#6366f1',borderWidth:2,borderRadius:8,
+    }]
+  },
+  options:{...chartStyle,animation:{duration:1500,easing:'easeOutBounce'}}
+});
+
+new Chart(document.getElementById('ordersChart'),{
+  type:'line',
+  data:{
+    labels:["2/25/2026", "2/26/2026", "2/27/2026", "2/28/2026", "3/1/2026", "3/2/2026"],
+    datasets:[{
+      data:[18, 43, 15, 14, 35, 25],
+      borderColor:'#06d6a0',backgroundColor:'rgba(6,214,160,0.1)',
+      borderWidth:3,fill:true,tension:.4,pointRadius:6,
+      pointBackgroundColor:'#06d6a0',pointBorderColor:'#fff',pointBorderWidth:2,
+    }]
+  },
+  options:{...chartStyle,animation:{duration:2000,easing:'easeInOutQuart'}}
+});
+
+new Chart(document.getElementById('audienceChart'),{
+  type:'doughnut',
+  data:{
+    labels:["إناث 35-44", "إناث 25-34", "إناث 45-54", "ذكور 35-44", "ذكور 25-34", "إناث 18-24"],
+    datasets:[{
+      data:[89363, 73241, 39142, 30434, 23497, 15748],
+      backgroundColor:['#6366f1','#818cf8','#06d6a0','#10b981','#f59e0b','#ef4444'],
+      borderWidth:0,
+    }]
+  },
+  options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{family:"Cairo"}}}}}
+});
+</script>
+</body>
+</html>
